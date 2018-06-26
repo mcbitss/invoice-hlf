@@ -1,0 +1,46 @@
+
+# ---------------------------------------------------------------------------
+# "OrdererOrgs" - Definition of organizations managing orderer nodes
+# ---------------------------------------------------------------------------
+OrdererOrgs:
+  # ---------------------------------------------------------------------------
+  # Orderer
+  # ---------------------------------------------------------------------------
+  - Name: Orderer
+    Domain: fejlett.com
+    Specs:
+      - Hostname: orderer
+
+# ---------------------------------------------------------------------------
+# "PeerOrgs" - Definition of organizations managing peer nodes
+# ---------------------------------------------------------------------------
+PeerOrgs:
+  # ---------------------------------------------------------------------------
+  # Org1
+  # ---------------------------------------------------------------------------
+  - Name: Org1
+    Domain: org1.fejlett.com
+    CA:
+       Hostname: ca # implicitly ca.org1.fejlett.com
+    Template:
+      Count: 4
+      # Start: 5
+      SANS:
+        - "localhost"
+    Users:
+      Count: 1
+
+  # ---------------------------------------------------------------------------
+  # Org2
+  # ---------------------------------------------------------------------------
+  - Name: Org2
+    Domain: org2.fejlett.com
+    CA:
+       Hostname: ca # implicitly ca.org1.fejlett.com
+
+    Template:
+      Count: 4
+      SANS:
+        - "localhost"
+    Users:
+      Count: 1

@@ -1,0 +1,363 @@
+version: '2'
+
+services:
+  ca.org1.fejlett.com:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org1
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.fejlett.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/71172896beaa8d691508fed56057af2a0cc8681f447aeb93bc17a631524f7f0b_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.fejlett.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/71172896beaa8d691508fed56057af2a0cc8681f447aeb93bc17a631524f7f0b_sk
+    ports:
+      - "15111:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.fejlett.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/71172896beaa8d691508fed56057af2a0cc8681f447aeb93bc17a631524f7f0b_sk'
+    volumes:
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/tlsca/:/etc/hyperledger/fabric-ca-server-tls
+    container_name: ca_peerOrg1
+
+  ca.org2.fejlett.com:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org2
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.fejlett.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/9f86adb9a258cd735b257e3b32aa1a1e366e395d19a278539905e80fd124e5d5_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.fejlett.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/9f86adb9a258cd735b257e3b32aa1a1e366e395d19a278539905e80fd124e5d5_sk
+    ports:
+      - "15112:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.fejlett.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/9f86adb9a258cd735b257e3b32aa1a1e366e395d19a278539905e80fd124e5d5_sk'
+    volumes:
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/tlsca/:/etc/hyperledger/fabric-ca-server-tls
+    container_name: ca_peerOrg2
+
+  orderer.fejlett.com:
+    container_name: orderer.fejlett.com
+    image: hyperledger/fabric-orderer
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/orderer/tls/ca.crt, /etc/hyperledger/msp/peerOrg1/tls/ca.crt, /etc/hyperledger/msp/peerOrg2/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    ports:
+      - 15101:7050
+    volumes:
+      - ./channel/:/etc/hyperledger/configtx
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer0.org1.fejlett.com/:/etc/hyperledger/msp/peerOrg1
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer0.org2.fejlett.com/:/etc/hyperledger/msp/peerOrg2
+
+  peer0.org1.fejlett.com:
+    container_name: peer0.org1.fejlett.com
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.org1.fejlett.com
+      - CORE_PEER_ENDORSER_ENABLED=true
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp/
+      - CORE_PEER_ADDRESS=peer0.org1.fejlett.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.fejlett.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=root
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=root
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 15121:7051
+      - 15123:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./channel/fejlettchannel.tx:/etc/hyperledger/configtx/fejlettchannel.tx
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer0.org1.fejlett.com/:/etc/hyperledger/msp/peer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/users/:/etc/hyperledger/msp/users
+    depends_on:
+      - orderer.fejlett.com
+      - couchdb0
+
+  couchdb0:
+    container_name: couchdb0
+    image: hyperledger/fabric-couchdb
+    ports:
+      - 15171:5984
+    environment:
+      - COUCHDB_USER=root
+      - COUCHDB_PASSWORD=root
+
+  peer1.org1.fejlett.com:
+    container_name: peer1.org1.fejlett.com
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.org1.fejlett.com
+      - CORE_PEER_ENDORSER_ENABLED=true
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp/
+      - CORE_PEER_ADDRESS=peer1.org1.fejlett.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.fejlett.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=root
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=root
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 15126:7051
+      - 15128:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer1.org1.fejlett.com/:/etc/hyperledger/msp/peer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/users/:/etc/hyperledger/msp/users
+    depends_on:
+      - orderer.fejlett.com
+      - peer0.org1.fejlett.com
+      - couchdb1
+  
+  couchdb1:
+    container_name: couchdb1
+    image: hyperledger/fabric-couchdb
+    ports:
+      - 15172:5984
+    environment:
+      - COUCHDB_USER=root
+      - COUCHDB_PASSWORD=root
+
+  peer2.org1.fejlett.com:
+    container_name: peer2.org1.fejlett.com
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer2.org1.fejlett.com
+      - CORE_PEER_ENDORSER_ENABLED=true
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp/
+      - CORE_PEER_ADDRESS=peer2.org1.fejlett.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.org1.fejlett.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb2:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=root
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=root
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 15131:7051
+      - 15133:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer2.org1.fejlett.com/:/etc/hyperledger/msp/peer
+      - ./channel/crypto-config/peerOrganizations/org1.fejlett.com/users/:/etc/hyperledger/msp/users
+    depends_on:
+      - orderer.fejlett.com
+      - peer0.org1.fejlett.com
+      - peer1.org1.fejlett.com
+      - couchdb2
+
+  couchdb2:
+    container_name: couchdb2
+    image: hyperledger/fabric-couchdb
+    ports:
+      - 15173:5984
+    environment:
+      - COUCHDB_USER=root
+      - COUCHDB_PASSWORD=root
+
+  peer0.org2.fejlett.com:
+    container_name: peer0.org2.fejlett.com
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.org2.fejlett.com
+      - CORE_PEER_ENDORSER_ENABLED=true
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp/
+      - CORE_PEER_ADDRESS=peer0.org2.fejlett.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.fejlett.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb3:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=root
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=root
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 15136:7051
+      - 15138:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer0.org2.fejlett.com/:/etc/hyperledger/msp/peer
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/users/:/etc/hyperledger/msp/users
+    depends_on:
+      - orderer.fejlett.com
+      - couchdb3
+
+  couchdb3:
+    container_name: couchdb3
+    image: hyperledger/fabric-couchdb
+    ports:
+      - 15174:5984
+    environment:
+      - COUCHDB_USER=root
+      - COUCHDB_PASSWORD=root
+  
+  peer1.org2.fejlett.com:
+    container_name: peer1.org2.fejlett.com
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.org2.fejlett.com
+      - CORE_PEER_ENDORSER_ENABLED=true
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp/
+      - CORE_PEER_ADDRESS=peer1.org2.fejlett.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.fejlett.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb4:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=root
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=root
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 15141:7051
+      - 15143:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer1.org2.fejlett.com/:/etc/hyperledger/msp/peer
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/users/:/etc/hyperledger/msp/users
+    depends_on:
+      - orderer.fejlett.com
+      - peer0.org2.fejlett.com
+      - couchdb4
+
+  couchdb4:
+    container_name: couchdb4
+    image: hyperledger/fabric-couchdb
+    ports:
+      - 15175:5984
+    environment:
+      - COUCHDB_USER=root
+      - COUCHDB_PASSWORD=root
+  
+  peer2.org2.fejlett.com:
+    container_name: peer2.org2.fejlett.com
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_LOGGING_PEER=debug
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer2.org2.fejlett.com
+      - CORE_PEER_ENDORSER_ENABLED=true
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp/
+      - CORE_PEER_ADDRESS=peer2.org2.fejlett.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2.org2.fejlett.com:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_default
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb5:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=root
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=root
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/msp/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/msp/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/msp/peer/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    ports:
+      - 15146:7051
+      - 15148:7053
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/:/etc/hyperledger/msp/orderer
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer2.org2.fejlett.com/:/etc/hyperledger/msp/peer
+      - ./channel/crypto-config/peerOrganizations/org2.fejlett.com/users/:/etc/hyperledger/msp/users
+    depends_on:
+      - orderer.fejlett.com
+      - peer0.org2.fejlett.com
+      - peer1.org2.fejlett.com
+      - couchdb5
+ 
+  couchdb5:
+    container_name: couchdb5
+    image: hyperledger/fabric-couchdb
+    ports:
+      - 15176:5984
+    environment:
+      - COUCHDB_USER=root
+      - COUCHDB_PASSWORD=root

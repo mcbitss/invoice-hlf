@@ -1,0 +1,182 @@
+---
+#
+# The network connection profile provides  the information about the target
+# blockchain network that are necessary for the applications to interact with it.
+#
+name: "invoice-app"
+
+x-type: "hlfv1"
+description: "invoice Network"
+version: "1.0"
+
+channels:
+  # name of the channel
+  fejlettchannel:
+    orderers:
+      - orderer.fejlett.com
+
+    # Required. list of peers from participating orgs
+    peers:
+      peer0.org1.fejlett.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+      peer1.org1.fejlett.com:
+        endorsingPeer: false
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: false
+      peer2.org1.fejlett.com:
+        endorsingPeer: false
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: false
+
+      peer0.org2.fejlett.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+      peer1.org2.fejlett.com:
+        endorsingPeer: false
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: false
+
+      peer2.org2.fejlett.com:
+        endorsingPeer: false
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: false
+
+    chaincodes:
+      - invoice:v0
+
+
+#
+# list of participating organizations in this network.
+#
+organizations:
+  Org1:
+    mspid: Org1MSP
+    peers:
+      - peer0.org1.fejlett.com
+      - peer1.org1.fejlett.com
+      - peer2.org1.fejlett.com
+    certificateAuthorities:
+      - ca-org1
+    adminPrivateKey:
+      path: artifacts/channel/crypto-config/peerOrganizations/org1.fejlett.com/users/Admin@org1.fejlett.com/msp/keystore/7dca1ef7c132ce3407b442662baf0fe8e8e67916c589b98642e7295f6d903a38_sk
+    signedCert:
+      path: artifacts/channel/crypto-config/peerOrganizations/org1.fejlett.com/users/Admin@org1.fejlett.com/msp/signcerts/Admin@org1.fejlett.com-cert.pem
+
+  Org2:
+    mspid: Org2MSP
+    peers:
+      - peer0.org2.fejlett.com
+      - peer1.org2.fejlett.com
+      - peer2.org2.fejlett.com
+    certificateAuthorities:
+      - ca-org2
+    adminPrivateKey:
+      path: artifacts/channel/crypto-config/peerOrganizations/org2.fejlett.com/users/Admin@org2.fejlett.com/msp/keystore/86b8597e43616702a61a653c66a6798a943c8f76da5323a160c794e3eeaa3a98_sk
+    signedCert:
+      path: artifacts/channel/crypto-config/peerOrganizations/org2.fejlett.com/users/Admin@org2.fejlett.com/msp/signcerts/Admin@org2.fejlett.com-cert.pem
+
+#
+# List of orderers to send transaction and channel create/update requests
+#
+orderers:
+  orderer.fejlett.com:
+    url: grpcs://localhost:15101
+    grpcOptions:
+      ssl-target-name-override: orderer.fejlett.com
+      grpc-max-send-message-length: 15
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/ordererOrganizations/fejlett.com/orderers/orderer.fejlett.com/tls/ca.crt
+
+#
+# List of peers to send various requests to, including endorsement, query
+# and event listener registration.
+#
+peers:
+  peer0.org1.fejlett.com:
+    # this URL is used to send endorsement and query requests
+    url: grpcs://localhost:15121
+
+    # this URL is used to connect the EventHub and registering event listeners
+    eventUrl: grpcs://localhost:15123
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.fejlett.com
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer0.org1.fejlett.com/tls/ca.crt
+
+  peer1.org1.fejlett.com:
+    url: grpcs://localhost:15126
+    eventUrl: grpcs://localhost:15128
+    grpcOptions:
+      ssl-target-name-override: peer1.org1.fejlett.com
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer1.org1.fejlett.com/tls/ca.crt
+
+  peer2.org1.fejlett.com:
+    url: grpcs://localhost:15131
+    eventUrl: grpcs://localhost:15133
+    grpcOptions:
+      ssl-target-name-override: peer2.org1.fejlett.com
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org1.fejlett.com/peers/peer2.org1.fejlett.com/tls/ca.crt
+
+  peer0.org2.fejlett.com:
+    url: grpcs://localhost:15136
+    eventUrl: grpcs://localhost:15138
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.fejlett.com
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer0.org2.fejlett.com/tls/ca.crt
+
+  peer1.org2.fejlett.com:
+    url: grpcs://localhost:15141
+    eventUrl: grpcs://localhost:15143
+    grpcOptions:
+      ssl-target-name-override: peer1.org2.fejlett.com
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer1.org2.fejlett.com/tls/ca.crt
+
+  peer2.org2.fejlett.com:
+    url: grpcs://localhost:15146
+    eventUrl: grpcs://localhost:15148
+    grpcOptions:
+      ssl-target-name-override: peer2.org2.fejlett.com
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org2.fejlett.com/peers/peer2.org2.fejlett.com/tls/ca.crt
+
+#
+# Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows
+# certificate management to be done via REST APIs.
+#
+certificateAuthorities:
+  ca-org1:
+    url: https://localhost:15111
+    httpOptions:
+      verify: false
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org1.fejlett.com/ca/ca.org1.fejlett.com-cert.pem
+    registrar:
+      - enrollId: admin
+        enrollSecret: adminpw
+    caName: ca-org1
+
+  ca-org2:
+    url: https://localhost:15112
+    httpOptions:
+      verify: false
+    tlsCACerts:
+      path: artifacts/channel/crypto-config/peerOrganizations/org2.fejlett.com/ca/ca.org2.fejlett.com-cert.pem
+    registrar:
+      - enrollId: admin
+        enrollSecret: adminpw
+    caName: ca-org2

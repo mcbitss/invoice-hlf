@@ -1,0 +1,18 @@
+---
+#
+# The network connection profile provides  the information about the target
+# blockchain network that are necessary for the applications to interact with it.
+#
+name: "invoice-app-org1"
+description: "invoice app Network - client definition for Org1"
+version: "1.0"
+
+#
+# The client section is (node.js) SDK-specific 
+#
+client:
+  organization: Org1
+  credentialStore:
+    path: "./fabric-client-kv-org1"
+    cryptoStore:
+      path: "/tmp/fabric-client-kv-org1"

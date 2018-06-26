@@ -1,0 +1,354 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Invoice-app REST API"
+    },
+  "host": "mcbitsshyd.dyndns.biz:4000",
+  "schemes": 
+    "http"
+  ,
+  "paths": {
+    "/api/register":{
+      "post": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Seller/Buyer Registration"
+        ],
+        "summary": "",
+        "operationId": "register",
+        "produces": [
+          
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Register request",
+            "required": true,
+            "schema": {
+              "$ref": "#/model/args"
+            }
+          }
+        ],        
+        "responses": {
+          "default": {
+            "description": "  "
+          }
+        }
+      }
+
+    },
+    "/api/login":{
+      "post": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login",
+        "operationId": "login",
+        "produces": [
+          
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Login request",
+            "required": true,
+            "schema": {
+              "$ref": "#/model/args"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/2fa":{
+      "post": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "2fa"
+        ],
+        "summary": "2fa",
+        "operationId": "2fa",
+        "produces": [
+          
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "2fa validation request",
+            "required": true,
+            "schema": {
+              "$ref": "#/model/args"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/invoice/process_invoice":{
+      "post": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Process Invoice to blockchain"
+        ],
+        "summary": "process invoice",
+        "operationId": "",
+        "produces": [
+          
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Process invoice request",
+            "required": true,
+            "schema": {
+              "$ref": "#/model/args"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/invoice/list_all":{
+      "get": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "list all invoices (Seller)"
+        ],
+        "summary": "list all buyer's invoice",
+        "operationId": "",
+        "produces": [
+          
+          "application/json"
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/invoice/list_by_buyer":{
+      "get": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "list all invoices of a Buyer"
+        ],
+        "summary": "list buyer all invoice",
+        "operationId": "",
+        "produces": [
+          
+          "application/json"
+        ],
+        "parameters": [
+          {  
+            "name":"username",
+            "in":"query",
+            "description":"username",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/invoice/buyer":{
+      "get": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Buyer invoices"
+        ],
+        "summary": " Buyer invoice",
+        "operationId": "",
+        "produces": [
+          
+          "application/json"
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/invoice/buyer/get_invoice":{
+      "post": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Get invoice (Buyer)"
+        ],
+        "summary": "Get invoice",
+        "operationId": "",
+        "produces": [
+          
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Invoke a get invoice request by Buyer",
+            "required": true,
+            "schema": {
+              "$ref": "#/model/args"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/invoice/seller/get_buyer_invoice":{
+      "get": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Get invoice (Seller) "
+        ],
+        "summary": "get invoice (Seller)",
+        "operationId": "",
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "parameters": [
+          {  
+            "name":"accountrefference",
+            "in":"query",
+            "description":"Account Refference Number",
+            "required":true,
+            "type":"string"
+          },
+          {  
+            "name":"invoicenumber",
+            "in":"query",
+            "description":"Invoice number",
+            "required":true,
+            "type":"string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+
+    },
+    "/api/get_transaction_details":{
+      "get": {
+        "security": [
+					{
+						"Bearer": []
+					}],
+        "tags": [
+          "Query Transaction by TransactionID"
+        ],
+        "summary": "Query Transaction by TransactionID",
+        "operationId": "querytrxnId",
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "parameters": [
+          {  
+          "name":"trxnId",
+          "in":"query",
+          "description":"trxnId",
+          "required":true,
+          "type":"string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": " "
+          }
+        }
+      }
+
+    }
+  },
+  "securityDefinitions": {
+    "Bearer":{
+			"type": "apiKey",
+			"name": "authorization",
+      "in": "authorization-header",
+      "scheme": "bearer",
+      "bearerFormat": "JWT",
+      "authenticationScheme": "Bearer"
+    }
+  },
+  "model": {
+    "args":{
+      "type": "object",
+      "properties": {
+        "args": [{
+          "type" : "string"
+            }]
+      }
+    }
+   
+  }
+}
+
